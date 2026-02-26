@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net"
+	"rollcall/internal/lists"
 	"rollcall/internal/recorder"
 	"rollcall/internal/rollcall"
 	"strings"
@@ -14,6 +15,9 @@ var Listener net.Listener
 func init() {
 	var err error
 
+	recorder.Exec()
+	lists.Exec()
+
 	Listener, err = net.Listen("tcp4", ":9999") // ("tcp", "0.0.0.0:9999"), ("tcp4", "")
 	if err != nil {
 		log.Fatalln("error starting listener:", err)
@@ -21,8 +25,8 @@ func init() {
 	log.Println("listening on:", Listener.Addr())
 }
 
-// Init starts the TCP server.
-func Init() {
+// Exec start the TCP server.
+func Exec() {
 	go func() {
 		for {
 			conn, err := Listener.Accept()

@@ -3,11 +3,10 @@ package rollcall
 import (
 	"bufio"
 	"errors"
-	"fmt"
-	"io"
 	"net"
 	"os"
 	"regexp"
+	"rollcall/internal/lists"
 	"rollcall/pkg/errs"
 	"strings"
 	"sync"
@@ -41,6 +40,9 @@ func setup(conn net.Conn, reader *bufio.Reader, line *bool) {
 func rollcall(conn net.Conn, reader *bufio.Reader, file *os.File, line bool) {
 	const exit, safe = true, true
 
+	mu.Lock()
+	defer mu.Unlock()
+
 	for {
 		if _, err := conn.Read([]byte{}); err != nil {
 			if !strings.Contains(err.Error(), "closed network connection") {
@@ -54,9 +56,6 @@ func rollcall(conn net.Conn, reader *bufio.Reader, file *os.File, line bool) {
 			return
 		}
 
-		mu.Lock()
-		defer mu.Unlock()
-
 		switch option {
 		case 1:
 			conn.Write([]byte("Nome: "))
@@ -68,26 +67,38 @@ func rollcall(conn net.Conn, reader *bufio.Reader, file *os.File, line bool) {
 				}
 				continue
 			}
-
-			if _, err := file.Seek(0, io.SeekStart); err != nil {
-				log(conn, "error seeking record file:", err)
-				write(conn, "internal server error")
-
-				close(conn)
-				return
-			}
-
-			bytes, err := io.ReadAll(file)
-			if err != nil {
-				log(conn, "error reading record file:", err)
-				write(conn, "internal server error")
-
-				close(conn)
-				return
-			}
-
 			name := normalize.String(input)
-			if regexp.MustCompile(fmt.Sprintf(`(?m)^%s$`, name)).Match(bytes) {
+
+			var pattern strings.Builder
+			pattern.WriteString(`.*`)
+			for part := range strings.SplitSeq(name, " ") {
+				pattern.WriteString(part + ".*")
+			}
+			regex := regexp.MustCompile(pattern.String())
+
+			matches := regex.FindAllString(lists.String, -1)
+			if len(matches) <= 0 {
+				log(conn, "name not found")
+				write(conn, "name not found")
+				continue
+			}
+			if len(matches) > 1 {
+				log(conn, "many same names")
+				write(conn, "many same names")
+				continue
+			}
+			name = regex.FindString(lists.String)
+
+			present, ok := lists.List[name]
+			if !ok {
+				log(conn, "full name not found")
+				write(conn, "internal server error")
+
+				close(conn)
+				return
+			}
+
+			if present {
 				log(conn, "name already present:", name)
 				write(conn, "name already present")
 
@@ -95,14 +106,7 @@ func rollcall(conn net.Conn, reader *bufio.Reader, file *os.File, line bool) {
 				return
 			}
 
-			if _, err := file.WriteString(name + "\n"); err != nil {
-				log(conn, "error recording presence:", err)
-				write(conn, "error recording presence")
-
-				close(conn)
-				return
-			}
-
+			lists.List[name] = true
 			log(conn, "success recording presence:", name)
 			write(conn, "success recording presence")
 

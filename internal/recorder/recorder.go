@@ -6,18 +6,21 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"rollcall/configs"
+	"rollcall/internal/lists"
+	"strings"
 	"time"
 )
 
-const (
-	fileName   = "record.txt"
-	folderName = "assets/records"
-)
+const fileName = "record.txt"
+
+var folderName = filepath.Join(configs.FolderAssets, "records")
 
 // File is the global record file to be closed at end of the main.
 var File *os.File
 
-func init() {
+// Exec create or open record file.
+func Exec() {
 	var err error
 
 	if err := os.MkdirAll(folderName, 0775); err != nil && !errors.Is(err, os.ErrExist) {
@@ -34,8 +37,19 @@ func init() {
 	}
 }
 
-// Clean execute all necessarie final steps of record and must be called at end of the main.
-func Clean() {
+// Process execute all necessarie final steps of record and must be called at end of the main.
+func Process() {
+	defer File.Close()
+	var names strings.Builder
+
+	for name, present := range lists.List {
+		fmt.Fprintf(&names, "%-*s: [%s]\n", lists.Max, name, map[bool]string{true: "v", false: "x"}[present])
+	}
+
+	if _, err := File.WriteString(names.String()); err != nil {
+		log.Println("error writing record names:", err)
+	}
+
 	if err := os.Rename(fileName, filepath.Join(
 		folderName, time.Now().Format(
 			fmt.Sprintf("%s_%s.txt", time.DateOnly, time.TimeOnly),
@@ -43,4 +57,7 @@ func Clean() {
 	)); err != nil {
 		log.Println("error changing record file name:", err)
 	}
+
+	log.Println("list of presence")
+	println(strings.TrimSuffix(names.String(), "\n"))
 }

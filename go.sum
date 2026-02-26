@@ -1,2 +1,4 @@
 github.com/go-hl/normalize v1.3.0 h1:vPwir5yq7wGO4jZNYsQNB5JIf1a51W/J8KUB2XhKCRY=
 github.com/go-hl/normalize v1.3.0/go.mod h1:wyCPf2HtPVVGovgS7ZzqeydUk3eVFTGQKd5OcpY/+2M=
+github.com/go-hl/os v1.3.0 h1:KK8JX6J2LFWJ1e3q9vs3lGtGNCpu85TdVnQxuhK8qE4=
+github.com/go-hl/os v1.3.0/go.mod h1:i1RBvadNPkiIjwiNIi7qfjPTPTmgAgUUTH7kjSm4ilo=

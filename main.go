@@ -10,7 +10,6 @@ import (
 
 func main() {
 	defer server.Listener.Close()
-	defer recorder.File.Close()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(
@@ -18,8 +17,8 @@ func main() {
 		syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGTSTP,
 	)
 
-	server.Init()
+	server.Exec()
 
 	<-quit
-	recorder.Clean()
+	recorder.Process()
 }
