@@ -35,6 +35,7 @@ func Init() {
 				log.Println("error listener accept:", err)
 				continue
 			}
+			defer conn.Close()
 			log.Println(conn.RemoteAddr(), "connected")
 
 			go rollcall.Exec(conn, recorder.File)

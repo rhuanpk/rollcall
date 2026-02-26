@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	defer recorder.File.Close()
 	defer server.Listener.Close()
+	defer recorder.File.Close()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
