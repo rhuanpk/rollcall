@@ -25,6 +25,8 @@ func TestLoad(t *testing.T) {
 			defer conn.Close()
 
 			conn.Read([]byte{})                 // read title
+			conn.Read([]byte{})                 // read setup
+			fmt.Fprintln(conn, "1")             // choose option 1
 			conn.Read([]byte{})                 // read menu
 			fmt.Fprintln(conn, "1")             // choose option 1
 			conn.Read([]byte{})                 // read name
