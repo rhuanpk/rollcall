@@ -8,6 +8,8 @@ import (
 )
 
 // TestLoad test the load capacity of server.
+//
+// Deprecated: need refactor.
 func TestLoad(t *testing.T) {
 	const clients = 1000
 	var wg sync.WaitGroup
