@@ -1,4 +1,4 @@
-package main
+package rollcall
 
 import (
 	"bufio"
@@ -183,7 +183,8 @@ func options(conn net.Conn, file *os.File, reader *bufio.Reader, option int, inp
 	}
 }
 
-func rollcall(conn net.Conn, file *os.File) {
+// Exec execute the rollcall system.
+func Exec(conn net.Conn, file *os.File) {
 	defer conn.Close()
 
 	var ln bool
