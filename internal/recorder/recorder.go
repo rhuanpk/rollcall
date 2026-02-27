@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"rollcall/configs"
 	"rollcall/internal/lists"
+	"slices"
 	"strings"
 	"time"
 )
@@ -42,8 +44,8 @@ func Process() {
 	defer File.Close()
 	var names strings.Builder
 
-	for name, present := range lists.List {
-		fmt.Fprintf(&names, "%-*s: [%s]\n", lists.Max, name, map[bool]string{true: "v", false: "x"}[present])
+	for _, name := range slices.Sorted(maps.Keys(lists.List)) {
+		fmt.Fprintf(&names, "%-*s: [%s]\n", lists.Max, name, map[bool]string{true: "v", false: "x"}[lists.List[name]])
 	}
 
 	if _, err := File.WriteString(names.String()); err != nil {
