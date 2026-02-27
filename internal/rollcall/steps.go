@@ -40,9 +40,6 @@ func setup(conn net.Conn, reader *bufio.Reader, line *bool) {
 func rollcall(conn net.Conn, reader *bufio.Reader, line bool) {
 	const exit, safe = true, true
 
-	mu.Lock()
-	defer mu.Unlock()
-
 	for {
 		conn.SetReadDeadline(time.Now().Add(time.Second))
 		if _, err := conn.Read([]byte{}); err != nil {
@@ -97,7 +94,9 @@ func rollcall(conn net.Conn, reader *bufio.Reader, line bool) {
 			}
 			name = regex.FindString(lists.String)
 
+			mu.Lock()
 			present, ok := lists.List[name]
+			mu.Unlock()
 			if !ok {
 				log(conn, "full name not found")
 				write(conn, "internal server error")
@@ -114,7 +113,9 @@ func rollcall(conn net.Conn, reader *bufio.Reader, line bool) {
 				return
 			}
 
+			mu.Lock()
 			lists.List[name] = true
+			mu.Unlock()
 			log(conn, "success recording presence:", name)
 			write(conn, "success recording presence")
 
