@@ -94,9 +94,7 @@ func rollcall(conn net.Conn, reader *bufio.Reader, line bool) {
 			}
 			name = regex.FindString(lists.String)
 
-			mu.Lock()
-			present, ok := lists.List[name]
-			mu.Unlock()
+			value, ok := lists.List.Load(name)
 			if !ok {
 				log(conn, "full name not found")
 				write(conn, "internal server error")
@@ -104,6 +102,7 @@ func rollcall(conn net.Conn, reader *bufio.Reader, line bool) {
 				close(conn)
 				return
 			}
+			present := value.(bool)
 
 			if present {
 				log(conn, "name already present:", name)
@@ -113,9 +112,7 @@ func rollcall(conn net.Conn, reader *bufio.Reader, line bool) {
 				return
 			}
 
-			mu.Lock()
-			lists.List[name] = true
-			mu.Unlock()
+			lists.List.Swap(name, true)
 			log(conn, "success recording presence:", name)
 			write(conn, "success recording presence")
 

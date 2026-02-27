@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"rollcall/configs"
+	"sync"
 	"time"
 
 	"github.com/go-hl/normalize"
@@ -16,7 +17,7 @@ var folderLists = filepath.Join(configs.FolderAssets, "lists")
 
 var (
 	// List is the global list of presence loaded from file.
-	List map[string]bool
+	List sync.Map
 
 	// String is the global list of presence concatenaded by new line.
 	String string
@@ -24,12 +25,6 @@ var (
 	// Max is the largest name in the list of presence.
 	Max int
 )
-
-func init() {
-	if List == nil {
-		List = make(map[string]bool)
-	}
-}
 
 // Exec load the list of presence from file.
 func Exec() {
@@ -67,7 +62,7 @@ func Exec() {
 	for scanner.Scan() {
 		name := normalize.String(scanner.Text())
 
-		List[name] = false
+		List.Store(name, false)
 		String += name + "\n"
 
 		if max := len(name) - 1; max > Max {
