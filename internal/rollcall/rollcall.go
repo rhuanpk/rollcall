@@ -15,5 +15,5 @@ func Exec(conn net.Conn, file *os.File) {
 
 	conn.Write(title())
 	setup(conn, reader, &line)
-	rollcall(conn, reader, file, line)
+	rollcall(conn, reader, line)
 }

@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"errors"
 	"net"
-	"os"
 	"regexp"
 	"rollcall/internal/lists"
 	"rollcall/pkg/errs"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-hl/normalize"
 )
@@ -37,19 +37,21 @@ func setup(conn net.Conn, reader *bufio.Reader, line *bool) {
 	}
 }
 
-func rollcall(conn net.Conn, reader *bufio.Reader, file *os.File, line bool) {
+func rollcall(conn net.Conn, reader *bufio.Reader, line bool) {
 	const exit, safe = true, true
 
 	mu.Lock()
 	defer mu.Unlock()
 
 	for {
+		conn.SetReadDeadline(time.Now().Add(time.Second))
 		if _, err := conn.Read([]byte{}); err != nil {
 			if !strings.Contains(err.Error(), "closed network connection") {
 				log(conn, "error reading connection:", err)
 			}
 			return
 		}
+		conn.SetReadDeadline(time.Time{})
 
 		option := menu(conn, reader, exit, safe, line, "Presença")
 		if option == -1 {
