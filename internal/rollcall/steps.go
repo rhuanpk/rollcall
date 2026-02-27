@@ -46,7 +46,9 @@ func rollcall(conn net.Conn, reader *bufio.Reader, line bool) {
 	for {
 		conn.SetReadDeadline(time.Now().Add(time.Second))
 		if _, err := conn.Read([]byte{}); err != nil {
-			if !strings.Contains(err.Error(), "closed network connection") {
+			conn.SetReadDeadline(time.Time{})
+			if !strings.Contains(err.Error(), "closed network connection") &&
+				!strings.Contains(err.Error(), "i/o timeout") {
 				log(conn, "error reading connection:", err)
 			}
 			return
