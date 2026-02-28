@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"rollcall/configs"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -14,6 +16,8 @@ import (
 )
 
 var folderLists = filepath.Join(configs.FolderAssets, "lists")
+
+const Ext = ".txt"
 
 var (
 	// List is the global list of presence loaded from file.
@@ -24,6 +28,9 @@ var (
 
 	// Max is the largest name in the list of presence.
 	Max int
+
+	// File is the global name that represent the original list name.
+	Name string
 )
 
 // Exec load the list of presence from file.
@@ -40,7 +47,11 @@ func Exec() {
 	}
 
 	log.Println("lists of presence")
-	for index, entry := range entries {
+	for index, entry := range slices.Clone(entries) {
+		if !strings.HasSuffix(entry.Name(), Ext) {
+			entries = slices.Delete(entries, index, index+1)
+			continue
+		}
 		log.Printf("%d. %s", index, entry.Name())
 	}
 
@@ -51,6 +62,7 @@ func Exec() {
 
 	fileName := entries[option].Name()
 	filePath := filepath.Join(folderLists, fileName)
+	Name = fileName
 
 	file, err := os.Open(filePath)
 	if err != nil {

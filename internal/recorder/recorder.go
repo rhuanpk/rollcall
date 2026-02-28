@@ -60,8 +60,9 @@ func Process() {
 		log.Println("error writing record names:", err)
 	}
 
+	listName := strings.TrimSuffix(lists.Name, lists.Ext)
 	if err := os.Rename(fileName, filepath.Join(
-		folderName, time.Now().Format(
+		folderName, listName+"_"+time.Now().Format(
 			fmt.Sprintf("%s_%s.txt", time.DateOnly, time.TimeOnly),
 		),
 	)); err != nil {
