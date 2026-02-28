@@ -77,7 +77,7 @@ func Exec() {
 		List.Store(name, false)
 		String += name + "\n"
 
-		if max := len(name) - 1; max > Max {
+		if max := len(name); max > Max {
 			Max = max
 		}
 	}
